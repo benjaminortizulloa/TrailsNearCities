@@ -2,6 +2,27 @@ library(magrittr)
 cities <- sf::st_read('../data/healthiest_cities.geojson') 
 trails <- sf::st_read('../data/nrt_trail.geojson')
 
+
+#========================
+# Get trail photos
+#========================
+photos <- vapply(trails$URLFeatured, function(link){
+  rvest::read_html(link) %>%
+    rvest::html_element('img.image.fit.no-print') %>%
+    rvest::html_attr('src') %>%
+    paste0("https://www.nrtdatabase.org/", .)
+}, character(1)) 
+
+
+photo_df <- purrr::imap_dfr(photos, function(x, i){
+  tibble::tibble(URLFeatured = i, photo = x)
+}) %>%
+  dplyr::bind_rows()
+
+readr::write_csv(photo_df, '../data/trail_photos.csv')
+
+trails <- dplyr::left_join(trails, photo_df)
+
 ct_dist <- sf::st_distance(
   sf::st_transform(cities,"+proj=lcc +lat_1=33 +lat_2=45 +lat_0=39 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"),
   sf::st_transform(trails,"+proj=lcc +lat_1=33 +lat_2=45 +lat_0=39 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs")
@@ -11,6 +32,10 @@ units(ct_dist) <- "miles"
 
 colnames(ct_dist) <- trails$TrailUID
 rownames(ct_dist) <- cities$City
+
+#============================================
+# get closest trails to most populated cities
+#============================================
 
 ten_city_trails <- cities$City %>%
   lapply(function(cty){
@@ -29,6 +54,10 @@ ten_city_trails <- cities$City %>%
 cities$closestTrails = ten_city_trails
 cities$avg_trail_distance <- vapply(ten_city_trails, function(x){mean(x$distance)}, double(1))
 cities$avg_trail_length <- vapply(ten_city_trails, function(x){mean(x$LengthMile)}, double(1))
+
+#================================================
+# use google directions api to get road features.
+#================================================
 
 getDirections <- function(cityGeo, trailGeo){
   origin <- sf::st_coordinates(cityGeo)
@@ -52,6 +81,10 @@ cityTrailDirections <- purrr::map2(cities$geometry, cities$closestTrails, functi
 saveRDS(cityTrailDirections, '../data/cityTrailDirections.rds')
 cityTrailDirections <- readRDS('../data/cityTrailDirections.rds')
 
+#=====================================
+# Turn directions to multiline strings
+#=====================================
+
 cityTrailDirectionShapes <- cityTrailDirections %>%
   purrr::imap(function(cty, i){
     print(i)
@@ -72,6 +105,10 @@ cityTrailDirectionShapes <- cityTrailDirections %>%
   })
 
 saveRDS(cityTrailDirectionShapes, '../data/cityTrailDirectionShapes.rds')
+cityTrailDirectionShapes <- readRDS('../data/cityTrailDirectionShapes.rds')
+#==================================================================================
+# x,y is now long lat of trail and the features are now the directions to the trail
+#==================================================================================
 
 cityAndDirections <- cities %>%
   dplyr::mutate(
@@ -83,4 +120,37 @@ cityAndDirections <- cities %>%
     })
   )
 
-sf::st_write(cityAndDirections, '../data/cityAndDirections.geojson')
+sf::st_write(cityAndDirections, '../data/cityAndDirections.geojson', delete_dsn = T)
+
+#==============================
+# how many trails near a city?
+#==============================
+
+trailCount <- cities$City %>%
+  lapply(function(cty){
+    tibble::tibble(
+      within100 = sum(ct_dist[cty,] <= units::as_units(100, 'miles'), na.rm = T),
+      within50 = sum(ct_dist[cty,] <= units::as_units(50, 'miles'), na.rm = T),
+      within25 = sum(ct_dist[cty,] <= units::as_units(25, 'miles'), na.rm = T),
+    )
+  }) %>%
+  dplyr::bind_rows()
+
+
+cityAndDirections <- sf::st_read('../data/cityAndDirections.geojson')
+
+cityAndDirections <- cbind(cityAndDirections, trailCount)
+sf::st_write(cityAndDirections, '../data/cityAndDirectionsAndCounts.geojson', delete_dsn = T)
+
+write(paste0('let cityInfo =', paste(readLines('../data/cityAndDirectionsAndCounts.geojson'), collapse = '\n')), '../assets/cityInfo.js')
+
+
+#========================
+# Get trail info
+#========================
+
+trails$Agency %>%
+  table %>%
+  sort
+
+trails$LengthMile %>% summary()

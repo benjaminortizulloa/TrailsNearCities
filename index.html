@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.3/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.3/ScrollTrigger.min.js"></script>
+</head>
+<body>
+    <section class="fillViewport" id="titleCard">
+        <video id="titleVideo" autoplay muted loop>
+            <!-- https://www.shutterstock.com/video/clip-1058324218-low-view-female-feet-sneakers-steps-along -->
+            <source src="assets/1058324218-preview.mp4" type="video/mp4">
+        </video>
+        <div class="fillViewport" id="titleText">
+            <div id="headerContainer">
+                <h1>Staying Active While Staying Safe</h1>
+                <h2>Fighting Covid-Era Sendentary Lifestyles with American Trails</h2>
+            </div>
+        </div>
+    </section>
+    <div id="youShouldScroll">
+        <div id="bounceContainer">
+            <p id="bounceScroll" style="margin: 0;" >Scroll Down</p>
+            <p id="downArrow" style="padding: 0; margin: 0;">&#9660;</p>
+        </div>
+    </div>
+    <section class="fillViewport" >
+        <p>hello</p>
+    </section>
+</body>
+<script src="assets/logic.js"></script>
+</html>

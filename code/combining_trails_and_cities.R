@@ -13,7 +13,6 @@ photos <- vapply(trails$URLFeatured, function(link){
     paste0("https://www.nrtdatabase.org/", .)
 }, character(1)) 
 
-
 photo_df <- purrr::imap_dfr(photos, function(x, i){
   tibble::tibble(URLFeatured = i, photo = x)
 }) %>%
@@ -22,6 +21,9 @@ photo_df <- purrr::imap_dfr(photos, function(x, i){
 readr::write_csv(photo_df, '../data/trail_photos.csv')
 
 trails <- dplyr::left_join(trails, photo_df)
+
+sf::st_write(trails, '../data/nrt_trail_with_pics.geojson')
+trails <- sf::st_read('../data/nrt_trail_with_pics.geojson')
 
 ct_dist <- sf::st_distance(
   sf::st_transform(cities,"+proj=lcc +lat_1=33 +lat_2=45 +lat_0=39 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"),
@@ -148,9 +150,77 @@ write(paste0('let cityInfo =', paste(readLines('../data/cityAndDirectionsAndCoun
 #========================
 # Get trail info
 #========================
+yearInfo <- trails$CertifiedYear %>%
+  table() %>%
+  sort() %>%
+  as.data.frame() %>%
+  dplyr::rename(year = 1, parks = 2) %>%
+  dplyr::mutate(year = as.integer(as.character(year)))%>%
+  dplyr::right_join(data.frame(year = 1969:2021)) %>%
+  tidyr::replace_na(list(parks = 0)) %>%
+  dplyr::arrange(year) %>%
+  dplyr::mutate(cumsum = cumsum(parks))
 
-trails$Agency %>%
-  table %>%
-  sort
+firstTrail <- trails %>%
+  dplyr::arrange(CertifiedYear) %>%
+  dplyr::filter(CertifiedYear > 0) %>%
+  .[1,] %>%
+  cbind(., sf::st_coordinates(.)) %>%
+  sf::st_drop_geometry()
 
-trails$LengthMile %>% summary()
+lastTrail <-  trails %>%
+  dplyr::arrange(desc(CertifiedYear), desc(TrailUID)) %>%
+  .[1,] %>%
+  cbind(., sf::st_coordinates(.)) %>%
+  sf::st_drop_geometry() 
+
+
+aveLength <- mean(trails$LengthMile)
+
+maxLength <- max(trails$LengthMile)
+maxLengthPark <- trails %>%
+  dplyr::filter(LengthMile == maxLength) %>%
+  cbind(., sf::st_coordinates(.)) %>%
+  sf::st_drop_geometry()
+
+minLength <- min(trails$LengthMile)
+minLengthPark <- trails %>%
+  dplyr::filter(LengthMile == minLength) %>%
+  cbind(., sf::st_coordinates(.)) %>%
+  sf::st_drop_geometry()
+
+agencyBreakdown <- trails$Agency %>%
+  sort() %>%
+  table() %>%
+  as.data.frame() %>%
+  dplyr::rename(Agency = 1, parks = 2) %>%
+  dplyr::arrange(desc(parks))
+
+typeBreakdown <- trails$TrailType %>%
+  stringr::str_replace_all( '<br>', ' ') %>% 
+  stringr::str_trim() %>%
+  table() %>%
+  sort() %>%
+  as.data.frame() %>%
+  dplyr::rename(type = 1, parks = 2) %>%
+  dplyr::arrange(desc(parks))
+
+trailInfo <- list(
+  yearInfo = yearInfo, 
+  firstTrail = firstTrail, 
+  lastTrail = lastTrail, 
+  aveLength = aveLength, 
+  maxLength = maxLength, 
+  maxLengthPark = maxLengthPark, 
+  minLength = minLength, 
+  minLengthPark = minLengthPark, 
+  agencyBreakdown = agencyBreakdown, 
+  typeBreakdown = typeBreakdown
+)
+
+trailInfo %>%
+  jsonlite::toJSON() %>%
+  write('../data/trailInfo.json')
+
+write(paste0('let trailInfo =', paste(readLines('../data/trailInfo.json'), collapse = '\n')), '../assets/trailInfo.js')
+

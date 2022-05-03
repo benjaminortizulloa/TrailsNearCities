@@ -25,12 +25,31 @@ h1 {
     font-size: 6vh;
     padding: 1vh;
     margin: 0;
+    font-family: "BWHaasDingbat","BWHaasHead","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
 h2 {
     font-size: 4vh;
     padding: 1vh;
     margin: 0;
+    font-family: "BWHaasDingbat","BWHaasHead","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+p {
+    font-family: "BWHaasDingbat","Publico Text Web",Georgia,Cambria,"Times New Roman",Times,serif;
+}
+
+#mainSVGContainer{
+    margin: 0;
+    padding: 0;
+    position:fixed;
+    top: 0;
+    left: 0;
+}
+
+#mainSvg{
+    width: 100%;
+    height: 100%;
 }
 
 .fillViewport {

@@ -17,8 +17,10 @@ body {
     z-index: 1000; position: absolute; top: 0; left: 0; width: 100%; height: 100%
 }
 
-#headerContainer {
-    background-color: rgba(255, 255, 255, .8);; display: flex; justify-content: center; align-items: center; flex-direction: column;
+#textContainer {
+    background-color: rgba(255, 255, 255, .9); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 1000; max-width: 60%;
+    max-width: 70%;
+    padding: 2vh;
 }
 
 h1 {
@@ -37,6 +39,12 @@ h2 {
 
 p {
     font-family: "BWHaasDingbat","Publico Text Web",Georgia,Cambria,"Times New Roman",Times,serif;
+    font-size: 3vh;
+    z-index: 1000;
+}
+
+.fillViewport > p {
+
 }
 
 #mainSVGContainer{
@@ -50,6 +58,10 @@ p {
 #mainSvg{
     width: 100%;
     height: 100%;
+}
+
+svg * {
+    transform-box: fill-box;
 }
 
 .fillViewport {
@@ -71,7 +83,7 @@ p {
 
 #bounceContainer {
     display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center;
-    background-color: rgba(255, 255, 255, .8); width: fit-content;
+    background-color: rgba(255, 255, 255, .9); width: fit-content;
     animation: containing 1s infinite;
     animation-direction: alternate;
 }

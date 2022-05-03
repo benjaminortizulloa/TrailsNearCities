@@ -147,7 +147,50 @@ function lineSetup(){
     return {lineY, lineX}
 }
 
+function lastImageSetup(){
+    let r = 250;
+    let imgLast = svg
+        .append('g')
+        .attr('id', 'lastTrail')
+        .style('transform-box', 'fill-box')
+        .attr('transform-origin', "center")
+        // .attr('transform', 'scale(1)')
+        .attr('transform', `scale(1) translate(0, 0)`)
+    
+    imgLast.append('clipPath')
+        .attr('id', 'lastClip')
+        .append('circle')
+        .attr('r', r)
+        .attr('cx', (w - m.r) )
+        .attr('cy', (m.t) )
+    
+    imgLast.append('circle')
+        .attr('id', 'lastBackground')
+        .attr('r', r)
+        .attr('cx', (w - m.r) )
+        .attr('cy', (m.t))
+    
+    imgLast.append('a')
+        .attr('href', trailInfo.lastTrail[0].URLFeatured)
+        .attr('target', '_blank')
+        .append('image')
+        .attr('id', 'lastImage')
+        .attr('href', trailInfo.lastTrail[0].photo)
+        .attr('width', 2 * r)
+        .attr('height', 2 * r)
+        .attr('x', w - m.r - r)
+        .attr('y', m.t - r)
+        .attr('clip-path', 'url(#lastClip)')
+
+    d3.select('#lastInfo')
+        .style('top', `${m.t +  r + 2}px`)
+        .style('left', `${w - m.r - r}px`)
+        .html(`This is <a href='${trailInfo.lastTrail[0].URLFeatured}' target='_blank'>${trailInfo.firstTrail[0].TrailName} </a> located in ${trailInfo.firstTrail[0].TrailState}. It is ${trailInfo.firstTrail[0].LengthMile} miles long. It was certified with the National Trails System in ${trailInfo.firstTrail[0].CertifiedYear} - making it one of the first trails in their system.`)
+}
+
+
 firstImageSetup()
+lastImageSetup()
 let {lineX, lineY} = lineSetup()
 
 const firstImageGrow = gsap.timeline({
@@ -188,3 +231,17 @@ const yearLineAnim = gsap.timeline({
 .from('#yearTrailLine', {drawSVG: 0}, 'start')
 .from("#lineXAxis, #lineYAxis", {opacity: 0}, 'start')
 .from('.lineLabs', {opacity: 0}, 'start')
+.add('second')
+.from('#lastTrail', {attr: {transform: `scale(0) `}, opacity: 0}, 'second')
+.from('#lastInfo', {y: 100,  opacity: 0}, 'second')
+
+const finishTrailSection = gsap.timeline({
+    scrollTrigger: {
+        trigger: "#section5",
+        start: "top bottom",
+        end: "top top", 
+        scrub: true
+    }
+})
+.to('svg, #lastInfo', {opacity: 0})
+.to('svg, #lastInfor', {y: -h})

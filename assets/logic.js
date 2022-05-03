@@ -94,12 +94,13 @@ function lineSetup(){
     let lineX = d3.scaleLinear()
         .domain(d3.extent(trailInfo.yearInfo, x => x.year))
         .range([m.l, w- m.r])
+        
     
     linechart
         .append('g')
         .attr('id', 'lineXAxis')
         .attr('transform', `translate(0, ${h-m.b})`)
-        .call(d3.axisBottom(lineX))
+        .call(d3.axisBottom(lineX).tickFormat(d3.format('d')))
     
     let lineY = d3.scaleLinear()
         .domain([0, d3.max(trailInfo.yearInfo, x => x.cumsum)])
@@ -119,6 +120,29 @@ function lineSetup(){
         .attr('stroke', 'forestgreen')
         .attr('stroke-width', 3)
         .attr('d', d3.line().x(d => lineX(d.year)).y(d => lineY(d.cumsum)))
+    
+    linechart
+        .append('text')
+        .attr('class', 'lineLabs')
+        .attr('transform', `translate(${w/2}, ${h-m.b/2})`)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '3vh')
+        .text("Year Park Certified into National Trails System")
+
+    linechart
+        .append('text')
+        .attr('class', 'lineLabs')
+        .attr('transform', `translate(${m.l}, ${h/2}) rotate(90)`)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '3vh')
+        .text("Total Trails")
+
+    linechart
+        .append('text')
+        .attr('class', 'lineLabs')
+        .attr('transform', `translate(${m.l}, ${m.t * .75})`)
+        .style('font-size', '4vh')
+        .text("Total Certified National Trails Over Time")
 
     return {lineY, lineX}
 }
@@ -160,6 +184,7 @@ const yearLineAnim = gsap.timeline({
         scrub: true
     }
 })
-.from('#yearTrailLine', {drawSVG: 0})
-.from("#lineXAxis, #lineYAxis", {opacity: 0})
-
+.add('start')
+.from('#yearTrailLine', {drawSVG: 0}, 'start')
+.from("#lineXAxis, #lineYAxis", {opacity: 0}, 'start')
+.from('.lineLabs', {opacity: 0}, 'start')

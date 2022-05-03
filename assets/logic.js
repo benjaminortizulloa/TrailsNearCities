@@ -86,7 +86,6 @@ function firstImageSetup(){
         .html(`This is <a href='${trailInfo.firstTrail[0].URLFeatured}' target='_blank'>${trailInfo.firstTrail[0].TrailName} </a> located in ${trailInfo.firstTrail[0].TrailState}. It is ${trailInfo.firstTrail[0].LengthMile} miles long. It was certified with the National Trails System in ${trailInfo.firstTrail[0].CertifiedYear} - making it one of the first trails in their system.`)
 }
 
-
 function lineSetup(){
     let linechart = svg
         .append('g')
@@ -219,6 +218,15 @@ const imageToLine = gsap.timeline({
 .to('#firstTrail', {opacity: 0, attr: {transform: `scale(0.6) translate(${lineX(trailInfo.firstTrail[0].CertifiedYear) - w/2 }, ${lineY(1) - h/2})`}}, 'start')
 
 
+const pinMap = gsap.timeline({
+    scrollTrigger: {
+        trigger: "#section3",
+        start: 'center center',
+        end: "center -500%",
+        pin: '#map'
+    }
+})
+
 const yearLineAnim = gsap.timeline({
     scrollTrigger: {
         trigger: "#section4",
@@ -243,8 +251,20 @@ const finishTrailSection = gsap.timeline({
         scrub: true
     }
 })
-.to('svg, #lastInfo', {opacity: 0})
-.to('svg, #lastInfo', {y: -h})
+.add('start')
+.to('svg, #lastInfo', {opacity: 0}, 'start')
+.to('svg, #lastInfo', {y: -h}, 'start')
+.from('#map', {opacity: 0}, 'start')
+
+const explore = gsap.timeline({
+    scrollTrigger: {
+        trigger: '#section6',
+        start: 'top bottom',
+        end: 'top 75%',
+        scrub: true
+    }
+})
+.from('#selectCity', {opacity: 0})
 
 
 var map = L.map('map').setView([51.505, -0.09], 13);
@@ -310,12 +330,8 @@ function getTopTen(city){
         map.removeLayer(trailLayer)
         map.removeLayer(trailDirectionLayer)
     }
-    cityLayer = L.marker(
-        city.geometry.coordinates.reverse(), 
-        {
-            icon: cityIcon
-        }
-    ).addTo(map);
+    cityLayer = L.marker(city.geometry.coordinates.reverse(), { icon: cityIcon }).bindPopup(`<center><b>${city.properties.City}</b></br><span><b>Fitness Rank: </b> ${city.properties.Fitness}</span></br><span><b>Overall Health Rank: </b>${city.properties.OverallRank}</span></br><span><b># Trails within 100 miles: </b>${city.properties.within100}</span></br><span><b>Average distance to 10 closest trails: </b> ${Math.round(city.properties.avg_trail_distance)} miles</span></br><span><b>Average length of 10 closest trails: </b> ${Math.round(city.properties.avg_trail_length)} miles</span></center>`)
+    cityLayer.addTo(map).openPopup();
 
     let tmpTrails = city.properties.closestTrails.features.map(function(x){
         let tmp = new L.marker([x.properties.Y, x.properties.X], {icon: trailIcon}).bindPopup(`<center><b><a href="${x.properties.URLFeatured}" target="_blank">${x.properties.TrailName}</a></b></br><img src=${x.properties.photo} width=100 height=100></img></br><span><b>Distance from City: </b> ${Math.round(x.properties.distance)} miles</span></br><span><b>Length of Trail?: </b> ${x.properties.LengthMile} miles</span></center>`);
@@ -332,5 +348,27 @@ function getTopTen(city){
     map.flyToBounds(trailDirectionLayer.getBounds(), {duration: 5})
 
 }
+
+
+function optionSetup(){
+    let dta = cityInfo.features.map(x => x.properties).sort((a,b) => a.OverallRank - b.OverallRank)
+    
+    let citySelect = d3.select('#selectCity')
+        .on('change', function(d){
+            let val = d3.select('#selectCity').property('value')
+            let cty = cityInfo.features.filter(d => d.properties.City == val)[0]
+            getTopTen(cty)
+        })
+        .selectAll('option')
+        .data(dta)
+        .enter().append('option')
+        .attr('value', d => d.City)
+        .property('selected', d => d.City == cityInfo.features[0].properties.City)
+        .html(d => `${d.City} (#${d.OverallRank} in overall health)`)
+
+}
+
+
+optionSetup()
 
 getTopTen(cityInfo.features[0])

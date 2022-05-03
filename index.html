@@ -30,7 +30,6 @@
             <p id="downArrow" style="padding: 0; margin: 0;">&#9660;</p>
         </div>
     </div>
-    
     <div class="fillViewport" id="mainSVGContainer">
         <svg id="mainSVG"></svg>
     </div>
@@ -60,15 +59,31 @@
     <section class="fillViewport" id="section2">
         <p id="firstInfo" class="placeMe"></p>
     </section>
-    <section class="fillViewport" id="section3"></section>
+    <section class="fillViewport" id="section3">
+        <div id="map" style="position: relative;  height: 80%; width: 80%;" ></div>
+    </section>
     <section class="fillViewport" id="section4">
         <p id="lastInfo" class="placeMe"></p>
     </section>
-
     <section class="fillViewport" id="section5">
-        <div id="map" style="position: relative;  height: 80%; width: 80%;" ></div>
+        <div class="textContainer" id="s5TextContainer" >
+            <p>
+                Let's take a look at the trails closest to America's most populated cities.
+            </p>
+            <p>
+                What you will see on this map is <b>Scottsdale, AZ</b> which is described as the most fit city in the United States and the 11th most healthy city in the United States. <sup><a href="https://wallethub.com/edu/healthiest-cities/31072" target="_blank">4</a></sup> 
+            </p>
+            <p>
+                You will also see the 10 closest trails to <b>Scottsdale</b>. These ten trails are an average of 40 miles away from the city and have an average trail length of 29 miles. Could these factors contribute to the cities overall health?
+            </p>
+            <p>
+                You might be able to find out by exploring other cities and their 10 closest trails.
+            </p>
+        </div>
     </section>
-    <section class="fillViewport" id="section6"></section>
+    <section class="fillViewport" id="section6">
+        <select name="selectCity" id="selectCity" autocomplete style="position: fixed; right: 5vw; top: 2vh; font-size: 2vmin;"></select>
+    </section>
 </body>
 <script src="assets/logic.js"></script>
 </html>

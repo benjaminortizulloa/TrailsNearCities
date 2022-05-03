@@ -41,6 +41,50 @@ function getDim(){
 let {w, h, m} = getDim()
 let svg = d3.select('#mainSVG').attr('width', w).attr('height', h)
 
+function firstImageSetup(){
+    let r = 250;
+    let imgFirst = svg
+        .append('g')
+        .attr('id', 'firstTrail')
+        .style('transform-box', 'fill-box')
+        .attr('transform-origin', "center")
+        .attr('transform', 'scale(1) translate(0, 0)')
+        .append('g')
+        .attr('id', 'subG')
+        .style('transform-box', 'fill-box')
+        .attr('transform-origin', "center")
+        .attr('transform', 'scale(1)')
+    
+    imgFirst.append('clipPath')
+        .attr('id', 'firstClip')
+        .append('circle')
+        .attr('r', r)
+        .attr('cx', w/2 )
+        .attr('cy', h/2 )
+    
+    imgFirst.append('circle')
+        .attr('id', 'firstBackground')
+        .attr('r', r)
+        .attr('cx', w/2 )
+        .attr('cy', h/2 )
+    
+    imgFirst.append('a')
+        .attr('href', trailInfo.firstTrail[0].URLFeatured)
+        .attr('target', '_blank')
+        .append('image')
+        .attr('id', 'firstImage')
+        .attr('href', trailInfo.firstTrail[0].photo)
+        .attr('width', 2 * r)
+        .attr('height', 2 * r)
+        .attr('x', w/2 - r)
+        .attr('y', h/2  - r)
+        .attr('clip-path', 'url(#firstClip)')
+
+    d3.select('#firstInfo')
+        .style('top', `${h/2 - r}px`)
+        .style('left', `${w/2 + r + 2}px`)
+        .html(`This is <a href='${trailInfo.firstTrail[0].URLFeatured}' target='_blank'>${trailInfo.firstTrail[0].TrailName} </a> located in ${trailInfo.firstTrail[0].TrailState}. It is ${trailInfo.firstTrail[0].LengthMile} miles long. It was certified with the National Trails System in ${trailInfo.firstTrail[0].CertifiedYear} - making it one of the first trails in their system.`)
+}
 
 function lineSetup(){
     let linechart = svg
@@ -79,45 +123,43 @@ function lineSetup(){
     return {lineY, lineX}
 }
 
+firstImageSetup()
 let {lineX, lineY} = lineSetup()
+
+const firstImageGrow = gsap.timeline({
+    scrollTrigger: {
+        trigger: "#section2",
+        start: "top bottom",
+        end: "top top",
+        scrub: true
+    }
+})
+.add('start')
+.to('#s1TextContainer', {opacity: 0, y: -500}, "start")
+.from('#firstTrail', {attr: {transform: "scale(0) translate(0, 0)"}}, 'start')
+.from('#firstInfo', {opacity: 0, x: 500}, 'start')
+
+const imageToLine = gsap.timeline({
+    scrollTrigger: {
+        trigger: "#section3", 
+        start: "top bottom",
+        end: "top top",
+        scrub: true
+    }
+})
+.add('start')
+.to("#firstInfo", {opacity: 0}, 'start')
+.to('#firstTrail', {opacity: 0, attr: {transform: `scale(0.6) translate(${lineX(trailInfo.firstTrail[0].CertifiedYear) - w/2 }, ${lineY(1) - h/2})`}}, 'start')
+
 
 const yearLineAnim = gsap.timeline({
     scrollTrigger: {
-        trigger: "#section1",
+        trigger: "#section4",
         start: "top bottom",
         end: "top top",
         scrub: true
     }
 })
 .from('#yearTrailLine', {drawSVG: 0})
+.from("#lineXAxis, #lineYAxis", {opacity: 0})
 
-function firstSetup(){
-    
-}
-let imgFirst = svg
-    .append('g')
-    .attr('id', 'firstTrail')
-
-imgFirst.append('clipPath')
-    .attr('id', 'firstClip')
-    .append('circle')
-    .attr('r', 250)
-    .attr('cx', w/2 )
-    .attr('cy', h/2 )
-
-imgFirst.append('circle')
-    .attr('id', 'firstBackground')
-    .attr('r', 250)
-    .attr('cx', w/2 )
-    .attr('cy', h/2 )
-
-imgFirst.append('image')
-    // .style('transform-box', 'fill-box')
-    // .attr('transform-origin', "center")
-    .attr('id', 'firstImage')
-    .attr('href', trailInfo.firstTrail[0].photo)
-    .attr('width', 500)
-    .attr('height', 500)
-    .attr('x', w/2 - 250)
-    .attr('y', h/2  - 250)
-    .attr('clip-path', 'url(#firstClip)')
